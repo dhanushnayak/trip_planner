@@ -11,3 +11,9 @@ wheels/
 env
 .env
 .env
+
+.ipynb_checkpoints/*
+.ipynb_checkpoints
+anaconda_projects/*
+anaconda_projects
+.conda
