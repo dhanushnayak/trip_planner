@@ -12,13 +12,44 @@ from utils.model_loader import ModelLoader
 
 class GraphBuilder:
     def __init__(self):
-        pass
+        self.tools = [
+            PlaceSearchTool(),
+            WeatherInfoTool(),
+            ExpenseCalculatorTool(),
+            CurrencyConversionTool(),
+        ]
+       
+        self.system_prompt = SYSTEM_PROMPT
+        self.model_loader = ModelLoader()
+        llm  = self.model_loader.load_llm()
+        self.llm_with_tools = llm.bind(tools=self.tools)
+        self.graph = None
 
-    def agent_func(self):
-        pass
+
+
+    def agent_function(self,state: MessagesState):
+        """ Main Agent Function """
+        user_question = state['messages']
+        input_quest = [self.system_prompt] + user_question
+        res  = self.llm_with_tools.invoke(input_quest)
+        return {"messages": [res]}
+
 
     def build_graph(self):
-        pass
+        graph_builder = StateGraph(MessagesState)
+        graph_builder.add_node('agent',self.agent_function)
+        graph_builder.add_node("tools",ToolNode(self.tools))
+
+
+        graph_builder.add_edge(START,"agent")
+        graph_builder.add_conditional_edges("agent",tools_condition)
+        graph_builder.add_edge("tools","agent")
+        graph_builder.add_edge("agent",END)
+
+        self.graph = graph_builder.compile()
+        return self.graph
+
 
     def __call__(self):
-        pass
+        return self.build_graph()
+
